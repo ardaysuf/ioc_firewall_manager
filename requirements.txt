@@ -1,0 +1,8 @@
+requests
+python-dotenv
+pyodbc
+loguru
+pydivert
+pywin32
+dnslib
+PySide6
