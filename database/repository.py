@@ -170,6 +170,7 @@ class IOCRepository:
 
             ipv6 = value
 
+
         self.cursor.execute(
 
             IOCQueries.INSERT,

@@ -29,18 +29,41 @@ class PowerShellExecutor:
 
             return subprocess.CompletedProcess([], 0, "", "")
 
-        script = []
+        BATCH_SIZE = 100
 
-        for ip in ips:
+        last = subprocess.CompletedProcess([], 0, "", "")
 
-            script.append(
-                f'New-NetFirewallRule -DisplayName "IOC_{ip}" '
-                f'-Direction Outbound '
-                f'-Action Block '
-                f'-RemoteAddress "{ip}"'
-            )
+        for i in range(0, len(ips), BATCH_SIZE):
 
-        return PowerShellExecutor.execute(";".join(script))
+            batch = ips[i:i + BATCH_SIZE]
+
+            script = []
+
+            for ip in batch:
+
+                script.append(
+                    f'New-NetFirewallRule '
+                    f'-DisplayName "IOC_OUT_{ip}" '
+                    f'-Direction Outbound '
+                    f'-Action Block '
+                    f'-RemoteAddress "{ip}"'
+                )
+
+                script.append(
+                    f'New-NetFirewallRule '
+                    f'-DisplayName "IOC_IN_{ip}" '
+                    f'-Direction Inbound '
+                    f'-Action Block '
+                    f'-RemoteAddress "{ip}"'
+                )
+
+            last = PowerShellExecutor.execute(";".join(script))
+
+            if last.returncode != 0:
+
+                return last
+
+        return last
 
     @staticmethod
     def delete_rules(ips):
@@ -49,23 +72,46 @@ class PowerShellExecutor:
 
             return subprocess.CompletedProcess([], 0, "", "")
 
-        names = ",".join([f'"IOC_{ip}"' for ip in ips])
+        BATCH_SIZE = 100
 
-        script = f"""
-$names=@({names})
+        last = subprocess.CompletedProcess([], 0, "", "")
+
+        for i in range(0, len(ips), BATCH_SIZE):
+
+            batch = ips[i:i + BATCH_SIZE]
+
+            names = []
+
+            for ip in batch:
+
+                names.append(f'"IOC_OUT_{ip}"')
+                names.append(f'"IOC_IN_{ip}"')
+
+            script = f"""
+$names=@({",".join(names)})
 Get-NetFirewallRule |
 Where-Object {{$names -contains $_.DisplayName}} |
 Remove-NetFirewallRule
 """
 
-        return PowerShellExecutor.execute(script)
+            last = PowerShellExecutor.execute(script)
+
+            if last.returncode != 0:
+
+                return last
+
+        return last
 
     @staticmethod
     def list_rules():
 
-        command = '''
+        command = r'''
 Get-NetFirewallRule -DisplayName "IOC_*" |
-Select-Object -ExpandProperty DisplayName
+Select-Object -ExpandProperty DisplayName |
+ForEach-Object {
+    $_ -replace '^IOC_(OUT|IN)_',''
+} |
+Sort-Object -Unique
 '''
 
         return PowerShellExecutor.execute(command)

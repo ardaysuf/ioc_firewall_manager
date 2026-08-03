@@ -43,19 +43,11 @@ class AddIOCDialog(QDialog):
         self.type = QComboBox()
 
         self.type.addItems(
-
             [
-
                 "ipv4",
-
                 "ipv6",
-
                 "domain",
-
-                "url"
-
             ]
-
         )
 
         row2.addWidget(self.type)

@@ -1,6 +1,4 @@
 import time
-import math
-import concurrent.futures
 
 from logs.logger import logger
 
@@ -27,35 +25,44 @@ class SyncService(BaseService):
         )
 
         total = 0
-        sources_types = ["ip", "ip6", "domain", "url"]
-        per_type_limit = math.ceil(limit / len(sources_types))
-        api_page_size = 20
-        pages_needed = math.ceil(per_type_limit / api_page_size)
 
-        for page in range(1, pages_needed + 1):
+        try:
 
-            if total >= limit:
-                break
+            # Tür filtresi yok → API en son IOC'leri tarihe göre karma döndürür
+            # API sayfa başına max 20 döndürüyor, limit dolana kadar sayfa sayfa çek
+            page = 1
+            api_page_size = 20
 
-            with concurrent.futures.ThreadPoolExecutor(
-                max_workers=4
-            ) as executor:
+            while total < limit:
 
-                futures = [
-                    executor.submit(
-                        self.api.get_addresses,
-                        page, api_page_size, ioc_type
-                    )
-                    for ioc_type in sources_types
-                ]
+                response = self.api.get_addresses(
+                    page=page,
+                    per_page=api_page_size,
+                    ioc_type=None
+                )
 
-                for future in concurrent.futures.as_completed(
-                    futures
-                ):
-                    data = future.result().json()
-                    addresses = AddressParser.parse(data)
-                    self.repository.save_many(addresses)
-                    total += len(addresses)
+                data = response.json()
+                addresses = AddressParser.parse(data)
+
+                if not addresses:
+                    break  # API'nin sonu
+
+                # Limiti aşmamak için kalan kadar al
+                remaining = limit - total
+                addresses = addresses[:remaining]
+
+                self.repository.save_many(addresses)
+                total += len(addresses)
+
+                # Son sayfa mı?
+                if page >= data.get("pageCount", 1):
+                    break
+
+                page += 1
+
+        except Exception as e:
+
+            logger.error(f"Senkronizasyon hatası: {e}")
 
         duration = round(time.time() - start, 2)
 
@@ -70,3 +77,4 @@ class SyncService(BaseService):
             "duration": duration
 
         }
+
