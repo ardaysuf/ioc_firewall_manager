@@ -69,15 +69,15 @@ python main.py
 
 ### Dashboard
 
-_Add dashboard screenshot here._
+<img width="1917" height="650" alt="image" src="https://github.com/user-attachments/assets/bce3fe35-2916-4574-bd7e-dd7e8110c9df" />
 
 ### IOC Management
 
-_Add IOC page screenshot here._
+<img width="1916" height="1096" alt="image" src="https://github.com/user-attachments/assets/b57596bd-a81b-4c6f-9a91-80885cf2a31d" />
 
 ### Firewall Synchronization
 
-_Add firewall page screenshot here._
+<img width="1917" height="422" alt="image" src="https://github.com/user-attachments/assets/cf7aad54-7072-468f-b7e3-af8f6954cbee" />
 
 ## Future Improvements
 
