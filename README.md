@@ -7,10 +7,10 @@ A Windows desktop application for managing Indicators of Compromise (IOCs) and a
 ## Features
 
 - Synchronize IOC feeds from the USOM Threat Intelligence API
-- Support for IPv4, IPv6, Domain and URL indicators
+- Support for IPv4, IPv6 and Domain indicators
 - Store IOC data in Microsoft SQL Server
 - Manual IOC management (add, edit, delete)
-- Automatic Windows Firewall rule synchronization
+- Automatic Windows Firewall (for IPs) and hosts file (for Domains) synchronization
 - IOC search and filtering
 - Dashboard with IOC statistics
 - Multi-page desktop interface built with PySide6
@@ -43,8 +43,8 @@ workers/        Background tasks
 Clone the repository
 
 ```bash
-git clone https://github.com/ardaysuf/IOC-Firewall-Manager.git
-cd IOC-Firewall-Manager
+git clone https://github.com/ardaysuf/ioc_firewall_manager.git
+cd ioc_firewall_manager
 ```
 
 Install dependencies
